@@ -1,0 +1,309 @@
+---
+title: "Hypothesis Test"
+author: "Yaochieh Yao"
+date: "2/21/2023"
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+data(golub, package = "multtest")
+```
+## Module 6 Hypothesis Test<br>
+**Problem 1 <br>**
+On the Golub et al. (1999) data, consider the “H4/j gene” gene (row
+2972) and the “APS Prostate specific antigen” gene (row 2989). Setup the
+appropriate hypothesis for proving the following claims. Chose and carry out the
+appropriate tests.<br>
+<br>
+a.The mean “H4/j gene” gene expression value in the ALL group is greater than
+-0.9 (note that this is negative 0.9).<br>
+<br>
+ANS: <br>
+H0: The mean “H4/j gene” gene expression value in the ALL group is -0.09<br>
+HA: The mean “H4/j gene” gene expression value in the ALL group greater<br>
+than -0.09 <br>
+<br>
+Since the p-value 0.01601 is significant (less than 0.05), we can reject the H0
+hypothesis, and conclude that the mean “H4/j gene” gene expression value in the
+ALL group is greater than -0.09
+```{r}
+gol.fac <- factor(golub.cl,levels=0:1, labels= c("ALL","AML"))
+# Problem 1-a
+t.test(golub[2972,gol.fac=="ALL"],mu=-0.9, alternative = "greater") # p-value = 0.01601
+```
+<br>
+<br>
+b.The mean “H4/j gene” gene expression value in ALL group differs from the
+mean “H4/j gene” gene expression value in the AML group.<br>
+<br>
+ANS:<br>
+H0: The mean “H4/j gene” gene expression value in ALL group differs from AML
+group<br>
+HA: The mean “H4/j gene” gene expression value in ALL group is the same as
+AML group<br>
+<br>
+Since the p-value 0.1444 is large, we did not have enough evidence to reject the
+null hypothesis.
+```{r}
+# Problem 1-b
+t.test(golub[2972,]~gol.fac) # p-value = 0.1444
+```
+<br>
+<br>
+c.In the ALL group, the mean expression value for the “H4/j gene” gene is lower
+than the mean expression value for the “APS Prostate specific antigen” gene.<br>
+<br>
+ANS:<br>
+H0: In the ALL group, the mean expression value for the “H4/j gene” gene is equal
+to the “APS Prostate specific antigen” gene<br>
+HA: In the ALL group, the mean expression value for the “H4/j gene” gene is less
+than the “APS Prostate specific antigen” gene<br>
+<br>
+Since the p-value 0.04541 is significant (less than 0.05), we can reject the null
+hypothesis and conclude that the mean expression value for the “H4/j gene” gene is
+less than the “APS Prostate specific antigen” gene in the ALL group.
+```{r}
+# Problem 1-c
+t.test(golub[2972, gol.fac=="ALL"],golub[2989,gol.fac=="ALL"],alternative="less") # p-value = 0.04541
+```
+<br>
+<br>
+d.Let pH4j denotes the proportion of patients for whom the “H4/j gene” expression
+values is greater than -0.6. We wish to show that pH4j in the ALL group is less than
+0.5.<br>
+<br>
+ANS:<br>
+H0: pH4j in the ALL group is equal to 0.5<br>
+HA: pH4j in the ALL group is less than 0.5<br>
+<br>
+Since p-value 0.1239 is large, the data did not provide enough evidence to reject
+null hypothesis at the significant level 0.05.
+```{r}
+# Problem 1-d
+n.all<-sum(golub[2972,gol.fac=="ALL"]>-0.6)
+size.all <-length(golub[2972,gol.fac=="ALL"])
+binom.test(n.all,size.all,0.5,alternative="less") # p-value =0.1239
+```
+<br>
+<br>
+e.The proportion pH4j in the ALL group differs from the proportion pH4j in the
+AML group.<br>
+<br>
+ANS:<br>
+H0: The proportion pH4j in the ALL group is the same from the proportion pH4j in
+the AML group<br>
+HA: The proportion pH4j in the ALL group differs from the proportion pH4j in the
+AML group<br>
+<br>
+The p-value 0.101 is not significant (less than 0.05), we cannot reject the null
+hypothesis. Also, the data does not provide evidence that the proportion pH4j in the
+ALL group differs from the proportion pH4j in the AML group.
+```{r}
+# Problem 1-e
+n.aml<-sum(golub[2972,gol.fac=="AML"]>-0.6)
+size.aml <-length(golub[2972,gol.fac=="AML"])
+prop.test(x=c(n.all,n.aml),n=c(size.all,size.aml),alternative="two.sided") # p-value = 0.101 
+```
+<br>
+<br>
+<br>
+<br>
+**Problem 2 <br>**
+Suppose that the probability to reject a biological hypothesis by the
+results of a certain experiment is 0.03. This experiment is repeated 3000 times.<br>
+a.How many rejections do you expect?<br>
+```{r}
+reject.p<-0.03
+n<-3000
+reject.p*n
+```
+<br>
+<br>
+b.What is the probability of less than 75 rejections?<br>
+```{r}
+pbinom(74,size=n,prob=reject.p)
+```
+<br>
+<br>
+<br>
+<br>
+**Problem 3 <br>**
+For testing H0: μ=5 versus HA: μ>5, we considers a new α=0.1 level test which
+rejects when t_obs=(X̄-5)/(s/√n) falls between t_(0.3,n-1) and t_(0.4,n-1). <br>
+<br>
+Use a Monte Carlo simulation to estimate the Type I error rate of this test when
+n=30. Do 10,000 simulation runs of data sets from the 𝑁(𝜇 = 5, 𝜎 = 4). Please
+show the R script for the simulation, and the R outputs for running the script.
+Provide your numerical estimate for the Type I error rate. Is this test valid (that is,
+is its Type I error rate same as the nominal α=0.1 level)?<br>
+<br>
+ANS:<br>
+The test is valid. The Monte Carlo estimate of the Type I error rate is 0.1020000
+with its 95% CI as (0.0960682, 0.1079318). This does agree with the nominal level
+of α = 0.1
+```{r}
+x.sim <- matrix(rnorm(10000*30,mean=5,sd=4),ncol = 30)
+tstat<-function(x) (mean(x)-5)/sd(x)*sqrt(length(x))
+tstat.sim<-apply(x.sim,1,tstat)
+reject.area<-qt(c(0.3,0.4),df=29)
+power.sim<-mean(tstat.sim<reject.area[2]&tstat.sim>reject.area[1]) # [1] -0.5302144 -0.2556836
+power.sim+c(-1,0,1)*qnorm(0.975)*sqrt(power.sim*(1-power.sim)/10000)
+# [1] 0.0960682 0.1020000 0.1079318
+```
+<br>
+<br>
+<br>
+<br>
+**Problem 4 <br>**
+On the Golub et al. (1999) data set, do Welch two-sample t-tests to compare
+every gene’s expression values in ALL group versus in AML group.<br>
+<br>
+a.Use Bonferroni and FDR adjustments both at 0.05 level. How many genes
+are differentially expressed according to these two criteria?
+```{r}
+p.values <- apply(golub, 1, function(x) t.test(x)$p.value)
+gol.fac <- factor(golub.cl,levels=0:1, labels= c("ALL","AML"))
+
+all.p.values<-p.values[gol.fac=="ALL"]
+aml.p.values<-p.values[gol.fac=="AML"]
+
+p.all <-p.adjust(p=all.p.values, method="bonferroni")<0.05 & p.adjust(p=all.p.values, method="fdr")<0.05
+sum(p.all) # [1] 1311
+
+p.aml <-p.adjust(p=aml.p.values, method="bonferroni")<0.05 & p.adjust(p=aml.p.values, method="fdr")<0.05
+sum(p.aml) # [1] 550
+```
+<br>
+<br>
+b.Find the gene names for the top three strongest differentially expressed
+genes (i.e., minimum p-values). 
+```{r}
+# Problem 4-b
+golub.gnames[order(all.p.values)[1:3],2]
+#[1] "Guanine nucleotide exchange factor p532 mRNA"                   
+#[2] "KIAA0094 gene, partial cds"                                     
+#[3] "Renal cell carcinoma antigen RAGE-4 mRNA, complete putative cds"
+
+golub.gnames[order(aml.p.values)[1:3],2]
+#[1] "PF4 Platelet factor 4"      "IDO Indole 2,3-dioxygenase"
+#[3] "APOC1 Apolipoprotein CI" 
+```
+<br>
+<br>
+<br>
+<br>
+
+## Module 7 Wilcoxon Shapiro-Wilk<br>
+**Problem 1 <br>** 
+For the Golub et al. (1999) data set, use appropriate Wilcoxon two-sample tests to
+find the genes whose mean expression values are higher in the ALL group than in
+the AML group. Use FDR adjustments at the 0.05 level. How many genes are
+expressed higher in the ALL group? Find the gene names for the top three genes
+with smallest p-values.<br>
+```{r warning=FALSE}
+gol.fac <- factor(golub.cl,levels=0:1, labels= c("ALL","AML"))
+ALL.higher = rep(NA, nrow(golub))
+for (i in 1:nrow(golub)){
+  ALL.higher[i]<-wilcox.test(golub[i,]~gol.fac,paired=F, alternative="two.sided")$p.value
+}
+p.ALL.higher<- p.adjust(p=ALL.higher, method="fdr")<0.05
+sum(p.ALL.higher) # [1] 679
+golub.gnames[order(ALL.higher)[1:3],2] # Use Original P-value
+```
+<br>
+<br>
+<br>
+<br>
+**Problem 2 <br>** 
+For the Golub et al. (1999) data set, apply the Shapiro-Wilk test of normality to
+every gene’s expression values in the AML group. How many genes do not pass
+the test at 0.05 level with FDR adjustment? <br>
+```{r}
+gol.fac <- factor(golub.cl,levels=0:1, labels= c("ALL","AML"))
+not.Pass = rep(NA, nrow(golub))
+for (i in 1:nrow(golub)){
+  not.Pass[i]<-shapiro.test(golub[i,gol.fac == "AML"])$p.value
+}
+p.not.Pass<- p.adjust(p=not.Pass, method="fdr")>0.05 # not pass
+sum(p.not.Pass) #[1] 2826
+```
+<br>
+<br>
+<br>
+<br>
+**Problem 3 <br>** 
+Gene "HOXA9 Homeo box A9" can cause leukemia (Golub et al., 1999). Use
+appropriate Wilcoxon two-sample tests to test if, for the ALL patients, the gene
+"HOXA9 Homeo box A9" expresses at the same level as the “CD33” gene. Please
+submit your R script with the answer.<br>
+<br>
+ANS:<br>
+We can see that, for 28 out of 38 pairs, the expression of CD33 gene is bigger than
+the expression of the HOXA9 Homeo box A9 gene. This results in a p-value =
+0.005098. Hence, the null hypothesis is rejected: the two genes do express
+differently.
+```{r}
+gol.fac <- factor(golub.cl,levels=0:1, labels= c("ALL","AML"))
+grep("HOXA9 Homeo box A9",golub.gnames[,2]) # [1] 1391
+grep("CD33",golub.gnames[,2]) # [1] 808
+diff<-golub[808,gol.fac=="ALL"]-golub[1391,gol.fac=="ALL"]
+binom.test(x=sum(diff>0), n=length(diff), p=0.5, alternative="two.sided")
+```
+<br>
+<br>
+<br>
+<br>
+
+
+**Problem 4 <br>** 
+The data set “UCBAdmissions” in R contains admission decisions by gender at six
+departments of UC Berkeley. For this data set, carry out appropriate test for
+independence between the admission decision and gender for each of the
+departments. What are your conclusions? <br>
+<br>
+ANS:<br>
+H0: The admission decision and gender are independent. (odds ratio equals to one.)<br>
+The p-value 2.2e-16 is very small, so we can reject the null hypothesis and
+conclude that the admission decision and gender are not independent.
+```{r}
+testTable<- matrix(c(sum(UCBAdmissions["Admitted","Male",]), sum(UCBAdmissions["Rejected","Male",]), sum(UCBAdmissions["Admitted","Female",]), sum(UCBAdmissions["Rejected","Female",])), nrow=2, dimnames=list("Admit"=c("Admitted","Rejected"), "Gender"=c("Male","Female")))
+fisher.test(testTable)
+```
+<br>
+<br>
+<br>
+<br>
+**Problem 5 <br>** 
+There are two random samples X1…Xn and Y1…Ym with population means μX and
+μY and population variances σ2X and σ2Y.For testing H0: σ2X = σ2Y versus
+HA: σ2X < σ2Y, we can use a permutation test for the statistic.<br>
+<br>
+Please program this permutation test in R. Use this nonparametric test on the
+“CD33” gene of the Golub et al. (1999) data set. Test whether the variance in the
+ALL group is smaller than the variance in the AML group. <br>
+<br>
+ANS:<br>
+H0: The variance in the ALL and AML group are the same<br>
+<br>
+Since the p-value of the permutation test is very close to 1, this result suggests the
+observed effect almost precisely equals the null hypothesis so that we can conclude
+the variance in AML and ALL group are almost the same.
+```{r}
+gol.fac <- factor(golub.cl,levels=0:1, labels= c("ALL","AML"))
+gene.data<- golub[808,]
+n<-sum(gol.fac=="ALL")
+m<-sum(gol.fac=="AML")
+S.obs<-sd(golub[gol.fac=="ALL"])^2/sd(golub[gol.fac=="AML"])^2
+n.perm=2000
+S.perm = rep(NA, n.perm)
+for (i in 1:n.perm){
+  data.perm = sample(gene.data, n+m, replace=F)
+  S.perm[i] = sd(data.perm[gol.fac=="ALL"])^2/sd(data.perm[gol.fac=="AML"])^2
+}
+2*min(mean(S.perm<=S.obs), mean(S.perm>=S.obs)) #[1] 0.987
+```
